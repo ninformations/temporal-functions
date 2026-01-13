@@ -1,0 +1,87 @@
+{
+  "name": "temporal-functions",
+  "version": "0.1.0",
+  "description": "A lightweight TypeScript framework providing lambda-like DX on top of Temporal's durable execution engine",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.mjs",
+      "require": "./dist/client/index.js"
+    },
+    "./worker": {
+      "types": "./dist/worker/index.d.ts",
+      "import": "./dist/worker/index.mjs",
+      "require": "./dist/worker/index.js"
+    },
+    "./testing": {
+      "types": "./dist/testing/index.d.ts",
+      "import": "./dist/testing/index.mjs",
+      "require": "./dist/testing/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "temporal",
+    "workflow",
+    "durable",
+    "functions",
+    "serverless",
+    "lambda",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ninformations/temporal-functions.git"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@temporalio/client": "^1.9.0",
+    "@temporalio/worker": "^1.9.0",
+    "@temporalio/workflow": "^1.9.0"
+  },
+  "peerDependenciesMeta": {
+    "@temporalio/worker": {
+      "optional": true
+    },
+    "@temporalio/workflow": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@temporalio/client": "^1.11.7",
+    "@temporalio/worker": "^1.11.7",
+    "@temporalio/workflow": "^1.11.7",
+    "@temporalio/activity": "^1.11.7",
+    "@types/node": "^20.11.0",
+    "tsup": "^8.0.1",
+    "typescript": "^5.3.3",
+    "vitest": "^2.0.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0"
+  }
+}
