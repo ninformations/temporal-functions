@@ -63,11 +63,6 @@ function createMockContext(overrides: Partial<WorkflowContext> = {}): WorkflowCo
 // Test Environment
 // =============================================================================
 
-interface MockedFunction<TInput, TOutput> {
-  fn: FunctionDef<TInput, TOutput>;
-  mock: (input: TInput) => Promise<TOutput>;
-}
-
 /**
  * Test environment for running workflows in isolation
  */

@@ -13,7 +13,6 @@ import type {
   WorkflowDef,
   WorkflowOptions,
   WorkflowHandler,
-  WorkflowContext,
   Registry,
   HttpTriggerOptions,
   CronTriggerOptions,
