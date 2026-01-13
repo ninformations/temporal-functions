@@ -72,4 +72,4 @@ jobs:
 
       - name: Publish to npm with provenance
         # With trusted publishing (OIDC), no NPM_TOKEN secret is needed!
-        run: npm publish --access public --provenance
+        run: npm publish --access public
