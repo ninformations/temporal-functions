@@ -1,6 +1,6 @@
 {
   "name": "@astami/temporal-functions",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "A lightweight TypeScript framework providing lambda-like DX on top of Temporal's durable execution engine",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

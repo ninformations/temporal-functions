@@ -88,7 +88,7 @@ class TemporalFunctionsWorker implements TFNWorker {
 
     // Generate the workflow module code
     const code = `
-      import { proxyActivities, sleep, workflowInfo, setHandler, defineSignal, defineQuery } from '@temporalio/workflow';
+      import { proxyActivities, sleep, workflowInfo, setHandler, defineSignal, defineQuery, condition, CancellationScope } from '@temporalio/workflow';
 
       // Proxy all activities
       const activities = proxyActivities({
@@ -99,6 +99,8 @@ class TemporalFunctionsWorker implements TFNWorker {
       function createContext() {
         const signalHandlers = new Map();
         const queryHandlers = new Map();
+        const signalPayloads = new Map();
+        const signalReceived = new Map();
 
         return {
           run: async (fn, input, options = {}) => {
@@ -126,6 +128,33 @@ class TemporalFunctionsWorker implements TFNWorker {
             signalHandlers.set(signalName, handler);
             const signal = defineSignal(signalName);
             setHandler(signal, handler);
+          },
+          waitForSignal: async (signalName, options = {}) => {
+            // Register signal handler if not already registered
+            if (!signalReceived.has(signalName)) {
+              signalReceived.set(signalName, false);
+              signalPayloads.set(signalName, undefined);
+              const signal = defineSignal(signalName);
+              setHandler(signal, (payload) => {
+                signalPayloads.set(signalName, payload);
+                signalReceived.set(signalName, true);
+              });
+            }
+
+            // Wait for signal with optional timeout
+            const timeoutMs = options.timeout ? parseDuration(options.timeout) : undefined;
+            const received = await condition(() => signalReceived.get(signalName), timeoutMs);
+
+            if (!received) {
+              throw new Error(\`Timeout waiting for signal: \${signalName}\`);
+            }
+
+            // Reset for potential reuse
+            const payload = signalPayloads.get(signalName);
+            signalReceived.set(signalName, false);
+            signalPayloads.set(signalName, undefined);
+
+            return payload;
           },
           onQuery: (queryName, handler) => {
             queryHandlers.set(queryName, handler);

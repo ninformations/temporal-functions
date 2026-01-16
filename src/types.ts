@@ -133,6 +133,18 @@ export interface WorkflowContext {
   ): void;
 
   /**
+   * Wait for a signal to be received
+   * @param signalName - Name of the signal to wait for
+   * @param options - Optional timeout configuration
+   * @returns The signal payload when received
+   * @throws TimeoutError if timeout is specified and signal not received in time
+   */
+  waitForSignal<TPayload = unknown>(
+    signalName: string,
+    options?: WaitForSignalOptions
+  ): Promise<TPayload>;
+
+  /**
    * Register a query handler
    */
   onQuery<TResult = unknown>(
@@ -153,6 +165,14 @@ export interface ChildWorkflowOptions {
   workflowId?: string;
   taskQueue?: string;
   workflowExecutionTimeout?: string;
+}
+
+/**
+ * Options for waitForSignal
+ */
+export interface WaitForSignalOptions {
+  /** Timeout duration (e.g., '5m', '1h'). If not specified, waits indefinitely. */
+  timeout?: string;
 }
 
 /**
