@@ -51,6 +51,9 @@ function createMockContext(overrides: Partial<WorkflowContext> = {}): WorkflowCo
     onSignal: <TPayload = unknown>(signalName: string, handler: (payload: TPayload) => void) => {
       signalHandlers.set(signalName, handler as (payload: unknown) => void);
     },
+    waitForSignal: async <TPayload = unknown>(): Promise<TPayload> => {
+      throw new Error('waitForSignal not implemented in mock context. Use TestEnvironment.start() for signal testing.');
+    },
     onQuery: (queryName, handler) => {
       queryHandlers.set(queryName, handler);
     },
