@@ -250,6 +250,32 @@ export interface ClientInterceptors {
 }
 
 /**
+ * Worker interceptors configuration
+ *
+ * Supports both activity interceptors and workflow module interceptors
+ * for OpenTelemetry trace propagation and custom instrumentation.
+ *
+ * @example
+ * ```typescript
+ * import { createWorkerInterceptors } from '@astami/temporal-functions/observability';
+ *
+ * const worker = tfn.worker({
+ *   temporal: { address: 'localhost:7233' },
+ *   taskQueue: 'payments',
+ *   workflowsPath: './dist/workflows.js',
+ *   interceptors: createWorkerInterceptors({ serviceName: 'stripe-processor' }),
+ * });
+ * ```
+ */
+export interface WorkerInterceptors {
+  /** Activity inbound interceptors (e.g., for logging, tracing) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  activityInbound?: ((ctx: any) => any)[];
+  /** Workflow interceptor module paths for bundling (e.g., '@temporalio/interceptors-opentelemetry/lib/workflow') */
+  workflowModules?: string[];
+}
+
+/**
  * Client configuration options
  */
 export interface ClientConfig {
@@ -356,6 +382,13 @@ export interface WorkerConfig {
   temporal: TemporalConfig;
   /** Task queue to poll */
   taskQueue: string;
+  /** Path to compiled workflow module (for external workflow files) */
+  workflowsPath?: string;
+  /** Activities object to register */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  activities?: Record<string, (...args: any[]) => Promise<any>>;
+  /** Worker interceptors for observability and custom instrumentation */
+  interceptors?: WorkerInterceptors;
   /** Maximum concurrent activity executions */
   maxConcurrentActivities?: number;
   /** Maximum concurrent workflow executions */

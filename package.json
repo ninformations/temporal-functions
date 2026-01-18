@@ -1,6 +1,6 @@
 {
   "name": "@astami/temporal-functions",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A lightweight TypeScript framework providing lambda-like DX on top of Temporal's durable execution engine",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -25,6 +25,11 @@
       "types": "./dist/testing/index.d.ts",
       "import": "./dist/testing/index.mjs",
       "require": "./dist/testing/index.js"
+    },
+    "./observability": {
+      "types": "./dist/observability/index.d.ts",
+      "import": "./dist/observability/index.mjs",
+      "require": "./dist/observability/index.js"
     }
   },
   "files": [
@@ -64,13 +69,21 @@
   "peerDependencies": {
     "@temporalio/client": "^1.9.0",
     "@temporalio/worker": "^1.9.0",
-    "@temporalio/workflow": "^1.9.0"
+    "@temporalio/workflow": "^1.9.0",
+    "@temporalio/interceptors-opentelemetry": "^1.9.0",
+    "@opentelemetry/api": "^1.0.0"
   },
   "peerDependenciesMeta": {
     "@temporalio/worker": {
       "optional": true
     },
     "@temporalio/workflow": {
+      "optional": true
+    },
+    "@temporalio/interceptors-opentelemetry": {
+      "optional": true
+    },
+    "@opentelemetry/api": {
       "optional": true
     }
   },
@@ -79,6 +92,8 @@
     "@temporalio/worker": "^1.11.7",
     "@temporalio/workflow": "^1.11.7",
     "@temporalio/activity": "^1.11.7",
+    "@temporalio/interceptors-opentelemetry": "^1.11.7",
+    "@opentelemetry/api": "^1.9.0",
     "@types/node": "^20.11.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",

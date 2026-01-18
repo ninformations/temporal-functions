@@ -6,6 +6,7 @@ export default defineConfig({
     'client/index': 'src/client/index.ts',
     'worker/index': 'src/worker/index.ts',
     'testing/index': 'src/testing/index.ts',
+    'observability/index': 'src/observability/index.ts',
   },
   format: ['cjs', 'esm'],
   dts: true,
@@ -18,5 +19,7 @@ export default defineConfig({
     '@temporalio/worker',
     '@temporalio/workflow',
     '@temporalio/activity',
+    '@temporalio/interceptors-opentelemetry',
+    '@opentelemetry/api',
   ],
 });

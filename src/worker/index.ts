@@ -212,16 +212,25 @@ class TemporalFunctionsWorker implements TFNWorker {
    * Start the worker
    */
   async start(): Promise<void> {
-    if (this.functions.size === 0 && this.workflows.size === 0) {
-      throw new Error('No functions or workflows registered. Call register() before start().');
+    // Allow starting with external workflowsPath and activities
+    const hasRegisteredFunctions = this.functions.size > 0 || this.workflows.size > 0;
+    const hasExternalConfig = this.config.workflowsPath || this.config.activities;
+
+    if (!hasRegisteredFunctions && !hasExternalConfig) {
+      throw new Error('No functions, workflows, or external config provided. Either call register() or provide workflowsPath/activities.');
     }
 
     console.log(`Starting Temporal Functions worker...`);
     console.log(`  Temporal: ${this.config.temporal.address}`);
     console.log(`  Namespace: ${this.config.temporal.namespace}`);
     console.log(`  Task Queue: ${this.config.taskQueue}`);
-    console.log(`  Functions: ${this.functions.size}`);
-    console.log(`  Workflows: ${this.workflows.size}`);
+    if (this.config.workflowsPath) {
+      console.log(`  Workflows Path: ${this.config.workflowsPath}`);
+    }
+    if (hasRegisteredFunctions) {
+      console.log(`  Registered Functions: ${this.functions.size}`);
+      console.log(`  Registered Workflows: ${this.workflows.size}`);
+    }
 
     // Connect to Temporal
     const connection = await NativeConnection.connect({
@@ -242,27 +251,44 @@ class TemporalFunctionsWorker implements TFNWorker {
         : undefined,
     });
 
-    // Build activities
-    const activities = this.buildActivities();
+    // Build activities - merge registered functions with external activities
+    const registeredActivities = this.buildActivities();
+    const activities = {
+      ...registeredActivities,
+      ...this.config.activities,
+    };
 
-    // For now, we'll use a simplified approach where workflows
-    // are bundled separately. In a full implementation, we'd
-    // generate the workflow bundle dynamically.
-    //
-    // TODO: Implement dynamic workflow bundling
-    // const workflowBundle = this.generateWorkflowBundle();
-
-    // Create worker
-    this.worker = await Worker.create({
+    // Build worker options
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const workerOptions: any = {
       connection,
       namespace: this.config.temporal.namespace,
       taskQueue: this.config.taskQueue,
-      activities,
-      // workflowsPath will need to be provided by the user
-      // or we need to implement dynamic bundling
+      activities: Object.keys(activities).length > 0 ? activities : undefined,
       maxConcurrentActivityTaskExecutions: this.config.maxConcurrentActivities,
       maxConcurrentWorkflowTaskExecutions: this.config.maxConcurrentWorkflows,
-    });
+    };
+
+    // Add workflowsPath if provided (for external workflow files)
+    if (this.config.workflowsPath) {
+      workerOptions.workflowsPath = this.config.workflowsPath;
+    }
+
+    // Add interceptors if provided
+    if (this.config.interceptors) {
+      workerOptions.interceptors = {};
+
+      if (this.config.interceptors.activityInbound) {
+        workerOptions.interceptors.activityInbound = this.config.interceptors.activityInbound;
+      }
+
+      if (this.config.interceptors.workflowModules) {
+        workerOptions.interceptors.workflowModules = this.config.interceptors.workflowModules;
+      }
+    }
+
+    // Create worker
+    this.worker = await Worker.create(workerOptions);
 
     // Handle graceful shutdown
     const shutdown = async () => {
@@ -302,19 +328,34 @@ class TemporalFunctionsWorker implements TFNWorker {
  *
  * @example
  * ```typescript
+ * // Option 1: Using registered functions (tfn pattern)
  * import { tfn } from 'temporal-functions/worker';
  * import { validateOrder, processOrder } from './functions';
  *
  * const worker = tfn.worker({
- *   temporal: {
- *     address: 'localhost:7233',
- *     namespace: 'default',
- *   },
+ *   temporal: { address: 'localhost:7233', namespace: 'default' },
  *   taskQueue: 'my-queue',
  * });
  *
  * worker.register(validateOrder);
  * worker.register(processOrder);
+ * await worker.start();
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Option 2: Using external workflowsPath and activities (processor pattern)
+ * import { createWorker } from '@astami/temporal-functions/worker';
+ * import { createWorkerInterceptors } from '@astami/temporal-functions/observability';
+ * import * as activities from './activities';
+ *
+ * const worker = createWorker({
+ *   temporal: { address: 'localhost:7233', namespace: 'loop' },
+ *   taskQueue: 'stripe-payments',
+ *   workflowsPath: './dist/workflows/index.js',
+ *   activities,
+ *   interceptors: createWorkerInterceptors({ serviceName: 'stripe' }),
+ * });
  *
  * await worker.start();
  * ```
