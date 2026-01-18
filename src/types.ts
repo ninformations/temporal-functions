@@ -226,6 +226,30 @@ export interface TLSConfig {
 }
 
 /**
+ * Client interceptors configuration
+ *
+ * Uses the actual Temporal SDK interceptor types for full compatibility
+ * with @temporalio/interceptors-opentelemetry and other interceptor packages.
+ *
+ * @example
+ * ```typescript
+ * import { OpenTelemetryWorkflowClientInterceptor } from '@temporalio/interceptors-opentelemetry';
+ *
+ * const client = tfn.client({
+ *   temporal: { address: 'localhost:7233' },
+ *   interceptors: {
+ *     workflow: [new OpenTelemetryWorkflowClientInterceptor()],
+ *   },
+ * });
+ * ```
+ */
+export interface ClientInterceptors {
+  /** Workflow client interceptors (e.g., for OpenTelemetry trace propagation) */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  workflow?: any[];
+}
+
+/**
  * Client configuration options
  */
 export interface ClientConfig {
@@ -233,6 +257,8 @@ export interface ClientConfig {
   temporal: TemporalConfig;
   /** Default task queue for workflows */
   taskQueue?: string;
+  /** Client interceptors for customizing behavior */
+  interceptors?: ClientInterceptors;
 }
 
 /**
@@ -249,6 +275,8 @@ export interface StartWorkflowOptions {
   memo?: Record<string, unknown>;
   /** Search attributes */
   searchAttributes?: Record<string, unknown>;
+  /** Headers for context propagation (e.g., OpenTelemetry trace context) */
+  headers?: Record<string, string>;
 }
 
 /**

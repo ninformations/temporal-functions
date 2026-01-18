@@ -5,7 +5,7 @@
  * Import from 'temporal-functions/client'.
  */
 
-import { Client, Connection } from '@temporalio/client';
+import { Client, Connection, type ClientOptions } from '@temporalio/client';
 import type {
   ClientConfig,
   WorkflowDef,
@@ -65,10 +65,20 @@ class TemporalFunctionsClient implements TFNClient {
           : undefined,
       });
 
-      this.client = new Client({
+      // Build client options with optional interceptors
+      const clientOptions: ClientOptions = {
         connection,
-        namespace: this.config.temporal.namespace,
-      });
+        namespace: this.config.temporal.namespace!,
+      };
+
+      // Add workflow interceptors if configured (e.g., for OpenTelemetry)
+      if (this.config.interceptors?.workflow) {
+        clientOptions.interceptors = {
+          workflow: this.config.interceptors.workflow,
+        };
+      }
+
+      this.client = new Client(clientOptions);
 
       return this.client;
     })();
