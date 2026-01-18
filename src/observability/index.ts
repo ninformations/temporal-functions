@@ -5,7 +5,7 @@
  * Import from '@astami/temporal-functions/observability'.
  */
 
-import { trace, SpanStatusCode } from '@opentelemetry/api';
+import { trace } from '@opentelemetry/api';
 import {
   OpenTelemetryActivityInboundInterceptor,
 } from '@temporalio/interceptors-opentelemetry';
