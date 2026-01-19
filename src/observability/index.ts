@@ -130,7 +130,25 @@ class TracingActivityInterceptor implements ActivityInboundCallsInterceptor {
  * This returns a WorkerInterceptors object that can be passed directly to
  * the worker configuration. It includes:
  * - Activity inbound interceptors for tracing and logging
- * - Workflow module interceptors for end-to-end trace propagation
+ *
+ * **IMPORTANT**: For end-to-end trace propagation from client -> workflow -> activities,
+ * your workflow module must also export an `interceptors` factory function:
+ *
+ * ```typescript
+ * // In your workflows/index.ts
+ * import type { WorkflowInterceptorsFactory } from '@temporalio/workflow';
+ * import {
+ *   OpenTelemetryInboundInterceptor,
+ *   OpenTelemetryOutboundInterceptor,
+ *   OpenTelemetryInternalsInterceptor,
+ * } from '@temporalio/interceptors-opentelemetry/lib/workflow';
+ *
+ * export const interceptors: WorkflowInterceptorsFactory = () => ({
+ *   inbound: [new OpenTelemetryInboundInterceptor()],
+ *   outbound: [new OpenTelemetryOutboundInterceptor()],
+ *   internals: [new OpenTelemetryInternalsInterceptor()],
+ * });
+ * ```
  *
  * @example
  * ```typescript
@@ -154,8 +172,6 @@ export function createWorkerInterceptors(config: WorkerInterceptorsConfig): Work
     activityInbound: [
       (ctx: ActivityContext) => new TracingActivityInterceptor(ctx, config),
     ],
-    // Include OTel workflow interceptors for end-to-end trace propagation
-    workflowModules: ['@temporalio/interceptors-opentelemetry/lib/workflow'],
   };
 }
 
@@ -166,3 +182,10 @@ export function createWorkerInterceptors(config: WorkerInterceptorsConfig): Work
 export {
   OpenTelemetryActivityInboundInterceptor,
 } from '@temporalio/interceptors-opentelemetry';
+
+// Re-export workflow interceptors for convenience
+export {
+  OpenTelemetryInboundInterceptor,
+  OpenTelemetryOutboundInterceptor,
+  OpenTelemetryInternalsInterceptor,
+} from '@temporalio/interceptors-opentelemetry/lib/workflow';

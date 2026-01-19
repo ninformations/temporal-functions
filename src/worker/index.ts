@@ -275,15 +275,32 @@ class TemporalFunctionsWorker implements TFNWorker {
     }
 
     // Add interceptors if provided
-    if (this.config.interceptors) {
+    if (this.config.interceptors || this.config.workflowsPath) {
       workerOptions.interceptors = {};
 
-      if (this.config.interceptors.activityInbound) {
+      if (this.config.interceptors?.activityInbound) {
         workerOptions.interceptors.activityInbound = this.config.interceptors.activityInbound;
       }
 
-      if (this.config.interceptors.workflowModules) {
-        workerOptions.interceptors.workflowModules = this.config.interceptors.workflowModules;
+      // Build workflow modules list:
+      // 1. Include any explicitly configured workflowModules
+      // 2. IMPORTANT: Also include the workflowsPath so its `interceptors` export is picked up
+      //    This enables OpenTelemetry trace propagation from the workflow module
+      const workflowModules: string[] = [];
+
+      if (this.config.interceptors?.workflowModules) {
+        workflowModules.push(...this.config.interceptors.workflowModules);
+      }
+
+      // Auto-include the workflows module as an interceptor module
+      // This allows the workflow module to export an `interceptors` factory function
+      // that will be automatically invoked by the Temporal runtime
+      if (this.config.workflowsPath) {
+        workflowModules.push(this.config.workflowsPath);
+      }
+
+      if (workflowModules.length > 0) {
+        workerOptions.interceptors.workflowModules = workflowModules;
       }
     }
 
